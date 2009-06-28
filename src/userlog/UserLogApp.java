@@ -16,12 +16,14 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.text.DateFormat;
 import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.Set;
 import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -67,42 +69,52 @@ public class UserLogApp extends SingleFrameApplication {
         Properties prop = new Properties();
         long tempoFinal = System.currentTimeMillis();
         long tempoDecorrido = tempoFinal - tempoInicial;
-        File logFile = new File((new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath())).getParent() + File.separator + "userlog.xml");
-
-        Date now = new Date();
-        DateFormat df1 = DateFormat.getDateInstance(DateFormat.FULL, new Locale("pt", "BR"));
-
-        DateFormat df2 = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT, new Locale("pt", "BR"));
-        df2.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
-
+        File logFile;
         try {
-            prop.loadFromXML(new FileInputStream(logFile));
-        } catch (IOException ioe) {
-        }
-        if (prop.getProperty(System.getProperty("user.name")) != null) {
-            tempoDecorrido = tempoDecorrido + new Long(prop.getProperty(System.getProperty("user.name")));
-        }
+            logFile = new File((new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath())).getParent() + File.separator + "userlog.xml");
 
-        prop.setProperty(System.getProperty("user.name"), Long.valueOf(tempoDecorrido).toString());
+            Date now = new Date();
+            DateFormat df1 = DateFormat.getDateInstance(DateFormat.FULL, new Locale("pt", "BR"));
 
-        try {
-            prop.storeToXML(new FileOutputStream(logFile), df2.format(now));
-        } catch (IOException ioe) {
+            DateFormat df2 = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT, new Locale("pt", "BR"));
+            df2.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
+
+            try {
+                prop.loadFromXML(new FileInputStream(logFile));
+            } catch (IOException ioe) {
+            }
+            if (prop.getProperty(System.getProperty("user.name")) != null) {
+                tempoDecorrido = tempoDecorrido + new Long(prop.getProperty(System.getProperty("user.name")));
+            }
+
+            prop.setProperty(System.getProperty("user.name"), Long.valueOf(tempoDecorrido).toString());
+
+            try {
+                prop.storeToXML(new FileOutputStream(logFile), df2.format(now));
+            } catch (IOException ioe) {
+            }
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(UserLogApp.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
     private Properties getSavedProperty() {
         Properties prop = new Properties();
-        File logFile = new File((new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().getPath())).getParent() + File.separator + "userlog.xml");
-
+        File logFile;
         try {
-            prop.loadFromXML(new FileInputStream(logFile));
-        } catch (IOException ioe) {
+            logFile = new File((new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath())).getParent() + File.separator + "userlog.xml");
+            try {
+                prop.loadFromXML(new FileInputStream(logFile));
+            } catch (IOException ioe) {
+            }
+
+            if (prop.isEmpty()) {
+                prop.setProperty(System.getProperty("user.name"), "0");
+            }
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(UserLogApp.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        if (prop.isEmpty()) {
-            prop.setProperty(System.getProperty("user.name"), "0");
-        }
         return prop;
     }
 
@@ -110,7 +122,7 @@ public class UserLogApp extends SingleFrameApplication {
         tableModel = new UserLogTableModel();
         Properties prop = getSavedProperty();
         String[] columnNames = {"Nome do usuário", "Tempo de utilização (ms)"};
-        Object[][]rowData = new Object[prop.size()][2];
+        Object[][] rowData = new Object[prop.size()][2];
         Integer[] tempo = new Integer[prop.size()];
         String[] usuario = prop.keySet().toArray(new String[0]);
         for (int i = 0; prop.size() > i; i++) {
