@@ -42,6 +42,9 @@ public class UserLogApp extends SingleFrameApplication {
         resourceMap = this.getContext().getResourceMap(UserLogApp.class);
         startTableModel();
         setupTrayIcon();
+        UserLogShutdownHook ulsh = new UserLogShutdownHook();
+        ulsh.setTempoInicial(System.currentTimeMillis());
+        Runtime.getRuntime().addShutdownHook(ulsh);
         userView = new UserLogView(this);
     }
     private UserLogTableModel tableModel;
@@ -62,7 +65,7 @@ public class UserLogApp extends SingleFrameApplication {
     @Override
     protected void shutdown() {
         showView();
-        salvaTempoDecorrido();
+//        salvaTempoDecorrido();
     }
 
     private void salvaTempoDecorrido() {
