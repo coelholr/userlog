@@ -4,6 +4,7 @@
 
 package userlog;
 
+import javax.swing.Icon;
 import org.jdesktop.application.Action;
 
 public class UserLogAboutBox extends javax.swing.JDialog {
@@ -11,6 +12,8 @@ public class UserLogAboutBox extends javax.swing.JDialog {
     public UserLogAboutBox(java.awt.Frame parent) {
         super(parent);
         initComponents();
+        org.jdesktop.application.ResourceMap resourceMap = org.jdesktop.application.Application.getInstance(userlog.UserLogApp.class).getContext().getResourceMap(UserLogAboutBox.class);
+        Icon icon = resourceMap.getIcon("imageLabel.icon");
         getRootPane().setDefaultButton(closeButton);
     }
 

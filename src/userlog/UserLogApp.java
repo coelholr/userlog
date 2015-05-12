@@ -14,16 +14,12 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.util.Date;
-import java.util.Locale;
 import java.util.Properties;
-import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.Icon;
 import org.jdesktop.application.Application;
 import org.jdesktop.application.ResourceMap;
 import org.jdesktop.application.SingleFrameApplication;
@@ -38,10 +34,16 @@ public class UserLogApp extends SingleFrameApplication {
      */
     @Override
     protected void startup() {
-        setTempoInicial(System.currentTimeMillis());
+
         resourceMap = this.getContext().getResourceMap(UserLogApp.class);
+        Icon icon = resourceMap.getIcon("imageLabel.icon");
+        String teste = resourceMap.getString("Application.mostrar");
         startTableModel();
-        setupTrayIcon();
+        try {
+            setupTrayIcon();
+        } catch (URISyntaxException ex) {
+            Logger.getLogger(UserLogApp.class.getName()).log(Level.SEVERE, null, ex);
+        }
         UserLogShutdownHook ulsh = new UserLogShutdownHook();
         ulsh.setTempoInicial(System.currentTimeMillis());
         Runtime.getRuntime().addShutdownHook(ulsh);
@@ -68,39 +70,38 @@ public class UserLogApp extends SingleFrameApplication {
 //        salvaTempoDecorrido();
     }
 
-    private void salvaTempoDecorrido() {
-        Properties prop = new Properties();
-        long tempoFinal = System.currentTimeMillis();
-        long tempoDecorrido = tempoFinal - tempoInicial;
-        File logFile;
-        try {
-            logFile = new File((new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath())).getParent() + File.separator + "userlog.xml");
-
-            Date now = new Date();
-            DateFormat df1 = DateFormat.getDateInstance(DateFormat.FULL, new Locale("pt", "BR"));
-
-            DateFormat df2 = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT, new Locale("pt", "BR"));
-            df2.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
-
-            try {
-                prop.loadFromXML(new FileInputStream(logFile));
-            } catch (IOException ioe) {
-            }
-            if (prop.getProperty(System.getProperty("user.name")) != null) {
-                tempoDecorrido = tempoDecorrido + new Long(prop.getProperty(System.getProperty("user.name")));
-            }
-
-            prop.setProperty(System.getProperty("user.name"), Long.valueOf(tempoDecorrido).toString());
-
-            try {
-                prop.storeToXML(new FileOutputStream(logFile), df2.format(now));
-            } catch (IOException ioe) {
-            }
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(UserLogApp.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-
+//    private void salvaTempoDecorrido() {
+//        Properties prop = new Properties();
+//        long tempoFinal = System.currentTimeMillis();
+//        long tempoDecorrido = tempoFinal - tempoInicial;
+//        File logFile;
+//        try {
+//            logFile = new File((new File(this.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath())).getParent() + File.separator + "userlog.xml");
+//
+//            Date now = new Date();
+//            DateFormat df1 = DateFormat.getDateInstance(DateFormat.FULL, new Locale("pt", "BR"));
+//
+//            DateFormat df2 = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.SHORT, new Locale("pt", "BR"));
+//            df2.setTimeZone(TimeZone.getTimeZone("America/Sao_Paulo"));
+//
+//            try {
+//                prop.loadFromXML(new FileInputStream(logFile));
+//            } catch (IOException ioe) {
+//            }
+//            if (prop.getProperty(System.getProperty("user.name")) != null) {
+//                tempoDecorrido = tempoDecorrido + new Long(prop.getProperty(System.getProperty("user.name")));
+//            }
+//
+//            prop.setProperty(System.getProperty("user.name"), Long.valueOf(tempoDecorrido).toString());
+//
+//            try {
+//                prop.storeToXML(new FileOutputStream(logFile), df2.format(now));
+//            } catch (IOException ioe) {
+//            }
+//        } catch (URISyntaxException ex) {
+//            Logger.getLogger(UserLogApp.class.getName()).log(Level.SEVERE, null, ex);
+//        }
+//    }
     private Properties getSavedProperty() {
         Properties prop = new Properties();
         File logFile;
@@ -137,7 +138,7 @@ public class UserLogApp extends SingleFrameApplication {
         tableModel.setData(rowData);
     }
 
-    private void setupTrayIcon() {
+    private void setupTrayIcon() throws URISyntaxException {
         TrayIcon trayIcon = null;
         if (SystemTray.isSupported()) {
             // get the SystemTray instance
@@ -183,7 +184,7 @@ public class UserLogApp extends SingleFrameApplication {
             } catch (AWTException e) {
                 System.err.println(e);
             }
-        // ...
+            // ...
         }
     }
 
@@ -224,8 +225,7 @@ public class UserLogApp extends SingleFrameApplication {
     public long getTempoInicial() {
         return tempoInicial;
     }
-
-    public void setTempoInicial(long tempoInicial) {
-        this.tempoInicial = tempoInicial;
-    }
+//    public void setTempoInicial(long tempoInicial) {
+//        this.tempoInicial = tempoInicial;
+//    }
 }
